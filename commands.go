@@ -27,7 +27,7 @@ func (irc *IRC) Identify() {
 	if config.Get().Server.NickservPassword == "" {
 		return
 	}
-	irc.SendRaw(fmt.Sprintf("NS identify %s", config.Get().Server.NickservPassword))
+	irc.SendRaw(fmt.Sprintf("NS IDENTIFY %s", config.Get().Server.NickservPassword))
 }
 
 func (irc *IRC) Join(channel string) {

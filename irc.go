@@ -68,7 +68,9 @@ func (irc *IRC) Loop() error {
 				irc.Disconnect("SIGINT")
 				return
 			case s := <-irc.raw:
-				logger.Log.Debugf("Raw:\t%q", s)
+				if config.Get().Debug {
+					logger.Log.Debugf("Raw:\t%q", s)
+				}
 			}
 		}
 	}()
@@ -115,6 +117,7 @@ func (irc *IRC) parseToEvent(raw string) (event *Event, ok bool) {
 			event.Code = message_args[0]
 			event.Arguments = message_args[1:]
 		}
+		event.Message = message
 	}
 
 	return event, true

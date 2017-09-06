@@ -32,16 +32,20 @@ type Config struct {
 func (c *Config) Check() error {
 	logger.Log.Infoln("Checking the config for errors")
 
-	if len(c.Nickname) < 3 {
+	if c.Nickname == "" {
+		c.Nickname = "gophirc"
+	}
+
+	if len(c.Nickname) > 0 && len(c.Nickname) < 3 {
 		return errors.New("Nickname is empty or too short")
 	}
 
 	if c.Username == "" {
-		return errors.New("Username can't be empty")
+		c.Username = "gophirc"
 	}
 
 	if c.Realname == "" {
-		return errors.New("Realname can't be empty")
+		c.Realname = "gophirc"
 	}
 
 	if c.Server.Address == "" {
