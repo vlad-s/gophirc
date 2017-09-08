@@ -1,4 +1,6 @@
-![](https://img.shields.io/badge/version-0.1-orange.svg?style=flat-square)
+[![gophirc godoc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/vlad-s/gophirc)
+![gophirc version](https://img.shields.io/badge/version-0.1-orange.svg)
+[![Twitter URL](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/0x766c6164)
 
 # gophirc
 A simple IRC bot framework written from scratch, in Go.
@@ -50,6 +52,27 @@ The framework already binds callbacks for:
 * INVITE - joins the channel & greets
 
 ## Examples
+Setting up a simple config:
+```json
+{
+  "servers": {
+    "first": {
+      "address": "irc.server.tld",
+      "port": 6667,
+      "nickname": "gophirc",
+      "nickserv_password": "my_nick_pass",
+      "channels": [
+        "#my_chan"
+      ],
+      "admins": [
+        "my_nickname"
+      ]
+    }
+  }
+}
+```
+_Note: a full config example can be found in the `config.json.example` file._
+
 Setting a simple bot:
 ```go
 package main

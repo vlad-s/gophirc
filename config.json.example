@@ -6,7 +6,7 @@
       "nickname": "gophirc",
       "username": "gophirc",
       "realname": "gophirc",
-      "nickserv_password": "my_nick_pass"
+      "nickserv_password": "my_nick_pass",
       "channels": [
         "#my_chan"
       ],
