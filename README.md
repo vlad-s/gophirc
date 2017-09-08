@@ -55,13 +55,15 @@ Setting a simple bot:
 package main
 
 import (
+    "sync"
     "github.com/vlad-s/gophirc"
     "github.com/vlad-s/gophirc/config"
 )
 
 func main() {
-    config.Parse("config.json")
-    irc := gophirc.New()
+    var wg sync.WaitGroup
+    conf, _ := config.Parse("config.json")
+    irc := gophirc.New(conf.Servers["name"], &wg)
     irc.Connect()
     irc.Loop()
 }
@@ -98,3 +100,4 @@ For more examples on usage, please see [gophircbot](https://github.com/vlad-s/go
 - [x] Add more commands: `MODE`, `KICK`, etc.
 - [ ] Add regex matching for nicknames, channels
 - [x] Connect Multiple servers
+- [ ] Add ignored users

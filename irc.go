@@ -45,6 +45,8 @@ type IRC struct {
 	quit chan struct{}
 }
 
+// Connect tries to connect to the server with the address & port specified in the config.
+// It has a 5 second timeout on the dialing.
 func (irc *IRC) Connect() error {
 	dest := fmt.Sprintf("%s:%d", irc.Server.Address, irc.Server.Port)
 	c, err := net.DialTimeout("tcp", dest, 5*time.Second)
@@ -56,12 +58,15 @@ func (irc *IRC) Connect() error {
 	return nil
 }
 
+// Disconnect sends a QUIT command to the server, and closes the connection.
 func (irc *IRC) Disconnect(s string) {
 	fmt.Fprint(irc.conn, fmt.Sprintf("QUIT :%s\r\n", s))
 	irc.conn.Close()
 	irc.Waiter.Done()
 }
 
+// Loop keeps the connection active, getting the raw text from the server.
+// It also handles the quitting & debug logging.
 func (irc *IRC) Loop() {
 	var gracefulExit bool
 
@@ -82,7 +87,7 @@ func (irc *IRC) Loop() {
 
 	s := bufio.NewScanner(irc.conn)
 	for s.Scan() {
-		go irc.getRaw(s.Text())
+		go irc.ReadEvent(s.Text())
 	}
 
 	if gracefulExit {
@@ -92,12 +97,14 @@ func (irc *IRC) Loop() {
 	logger.Log.Errorln(errors.Wrap(s.Err(), "Error while looping"))
 }
 
+// AddEventCallback adds a callback function to the Events map on the specified reply code.
 func (irc *IRC) AddEventCallback(code string, cb func(*Event)) *IRC {
 	irc.Events[code] = append(irc.Events[code], cb)
 	return irc
 }
 
-func (irc *IRC) parseToEvent(raw string) (event *Event, ok bool) {
+// ParseToEvent reads and parses a raw string to an Event struct.
+func (irc *IRC) ParseToEvent(raw string) (event *Event, ok bool) {
 	irc.raw <- raw
 	event = &Event{Raw: raw}
 	if raw[0] != ':' {
@@ -129,8 +136,9 @@ func (irc *IRC) parseToEvent(raw string) (event *Event, ok bool) {
 	return event, true
 }
 
-func (irc *IRC) getRaw(raw string) {
-	e, ok := irc.parseToEvent(raw)
+// ReadEvent reads a parsed Event, calls the callbacks defined, and adds some basic logging.
+func (irc *IRC) ReadEvent(raw string) {
+	e, ok := irc.ParseToEvent(raw)
 	if !ok {
 		split := strings.Split(e.Raw, " ")
 		if split[0] == "PING" {
@@ -138,13 +146,8 @@ func (irc *IRC) getRaw(raw string) {
 		}
 	}
 
-	for k, v := range irc.Events {
-		if k != e.Code {
-			continue
-		}
-		for _, f := range v {
-			f(e)
-		}
+	for _, callback := range irc.Events[e.Code] {
+		callback(e)
 	}
 
 	switch e.Code {
@@ -199,10 +202,12 @@ func (irc *IRC) autojoin(e *Event) {
 	}
 }
 
+// Quit provides a wrapper to sending a value into the `quit` channel.
 func (irc *IRC) Quit() {
 	irc.quit <- struct{}{}
 }
 
+// IsAdmin returns whether or not the specified user is an admin.
 func (irc *IRC) IsAdmin(u *User) bool {
 	for _, v := range irc.Server.Admins {
 		if u.Nick == v {
@@ -212,6 +217,7 @@ func (irc *IRC) IsAdmin(u *User) bool {
 	return false
 }
 
+// New returns a pointer to a new IRC struct using the server & wait group specified.
 func New(server config.Server, wg *sync.WaitGroup) *IRC {
 	logger.Log.WithFields(logger.Fields(map[string]interface{}{
 		"server": server.Address, "port": server.Port,

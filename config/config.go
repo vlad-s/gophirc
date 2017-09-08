@@ -29,6 +29,7 @@ type Config struct {
 	Debug bool `json:"debug"`
 }
 
+// Check implements basic error checking and provides some default values for the user.
 func (c *Config) Check() error {
 	logger.Log.Infoln("Checking the config for errors")
 
@@ -63,10 +64,11 @@ func (c *Config) Check() error {
 
 var conf *Config
 
-func Parse(s string) (*Config, error) {
-	logger.Log.Infof("Reading %q", s)
+// Parse reads and parses the config from the specified path.
+func Parse(path string) (*Config, error) {
+	logger.Log.Infof("Reading %q", path)
 
-	f, err := os.Open(s)
+	f, err := os.Open(path)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error opening the config file")
 	}
@@ -80,6 +82,7 @@ func Parse(s string) (*Config, error) {
 	return conf, nil
 }
 
+// Get returns the parsed config, or a new Config{} if it's nil.
 func Get() *Config {
 	if conf == nil {
 		return new(Config)
