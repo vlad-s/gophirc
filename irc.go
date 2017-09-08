@@ -117,7 +117,7 @@ func (irc *IRC) parseToEvent(raw string) (event *Event, ok bool) {
 			event.Code = message_args[0]
 			event.Arguments = message_args[1:]
 		}
-		event.Message = message
+		event.Message = strings.TrimSpace(message)
 	}
 
 	return event, true
@@ -157,22 +157,40 @@ func (irc *IRC) getRaw(raw string) {
 
 func (irc *IRC) addBasicCallbacks() {
 	irc.AddEventCallback("NOTICE", func(e *Event) {
-		if e.Arguments[0] == "*" && !irc.State.registered {
-			irc.State.Connected <- struct{}{}
-			irc.Register()
-		}
+		go func(e *Event) {
+			message := strings.Join(e.Arguments[1:], " ")
+
+			if e.Arguments[0] == "*" && !irc.State.registered {
+				irc.State.Connected <- struct{}{}
+				irc.Register()
+			}
+
+			if e.User == nil {
+				return
+			}
+
+			if e.User.Nick == "NickServ" && strings.HasPrefix(message, ":Password accepted") {
+				go irc.autojoin(e)
+			}
+		}(e)
 	}).AddEventCallback("001", func(e *Event) {
 		irc.Identify()
 	}).AddEventCallback("900", func(e *Event) {
-		irc.State.Identified <- struct{}{}
-		for _, v := range irc.Server.Channels {
-			irc.Join(v)
-		}
+		go irc.autojoin(e)
 	}).AddEventCallback("INVITE", func(e *Event) {
-		channel := e.Arguments[1][1:]
-		irc.Join(channel)
-		irc.PrivMsg(channel, fmt.Sprintf("Hi %s, %s invited me here.", channel, e.User.Nick))
+		go func(e *Event) {
+			channel := e.Arguments[1][1:]
+			irc.Join(channel)
+			irc.PrivMsg(channel, fmt.Sprintf("Hi %s, %s invited me here.", channel, e.User.Nick))
+		}(e)
 	})
+}
+
+func (irc *IRC) autojoin(e *Event) {
+	irc.State.Identified <- struct{}{}
+	for _, v := range irc.Server.Channels {
+		irc.Join(v)
+	}
 }
 
 func (irc *IRC) Quit() {

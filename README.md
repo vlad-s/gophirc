@@ -1,8 +1,13 @@
+![](https://img.shields.io/badge/version-0.1-orange.svg?style=flat-square)
+
 # gophirc
 A simple IRC bot framework written from scratch, in Go.
 
 ## Description
 Event based IRC framework.
+
+## Warning
+The API might break anytime.
 
 ## Framework managed events 
 * Manages server `PING` requests (not `CTCP PING`)

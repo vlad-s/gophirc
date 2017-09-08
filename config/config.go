@@ -62,7 +62,7 @@ func (c *Config) Check() error {
 var conf *Config
 
 func Parse(s string) (*Config, error) {
-	logger.Log.Infoln("Reading config.json")
+	logger.Log.Infof("Reading %q", s)
 
 	f, err := os.Open(s)
 	if err != nil {
