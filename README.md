@@ -17,6 +17,7 @@ The API might break anytime.
 * Logs if the bot gets kicked from a channel
 
 ## Features
+* Capability to connect to multiple servers
 * Multiple per event callbacks
 * State & general logging
 * Graceful exit handled either by a `SIGINT` (Ctrl-C)
@@ -88,9 +89,12 @@ irc.AddEventCallback("PRIVMSG", func(e *gophirc.Event) {
 })
 ```
 
+For more examples on usage, please see [gophircbot](https://github.com/vlad-s/gophircbot).
+
 ## To do
 - [ ] Add defaults
   - [x] Nickname, Username, Realname
 - [x] Parse CTCP messages into events
 - [x] Add more commands: `MODE`, `KICK`, etc.
 - [ ] Add regex matching for nicknames, channels
+- [x] Connect Multiple servers

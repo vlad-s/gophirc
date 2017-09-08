@@ -3,8 +3,6 @@ package gophirc
 import (
 	"fmt"
 	"strings"
-
-	"github.com/vlad-s/gophirc/config"
 )
 
 func (irc *IRC) SendRaw(s string) {
@@ -27,16 +25,15 @@ func (irc *IRC) pong(s string) {
 }
 
 func (irc *IRC) Register() {
-	conf := config.Get()
-	irc.SendRawf("USER %s 8 * %s", conf.Username, conf.Realname)
-	irc.SendRawf("NICK %s", conf.Nickname)
+	irc.SendRawf("USER %s 8 * %s", irc.Server.Username, irc.Server.Realname)
+	irc.SendRawf("NICK %s", irc.Server.Nickname)
 
 	irc.State.registered = true
 	irc.State.Registered <- struct{}{}
 }
 
 func (irc *IRC) Identify() {
-	ns := config.Get().Server.NickservPassword
+	ns := irc.Server.NickservPassword
 	if ns == "" {
 		return
 	}
@@ -53,6 +50,10 @@ func (irc *IRC) Part(channel string) {
 
 func (irc *IRC) PrivMsg(replyTo, message string) {
 	irc.SendRawf("PRIVMSG %s :%s", replyTo, message)
+}
+
+func (irc *IRC) PrivMsgf(replyTo, format string, args ...interface{}) {
+	irc.SendRawf("PRIVMSG %s :%s", replyTo, fmt.Sprintf(format, args...))
 }
 
 func (irc *IRC) Notice(replyTo, message string) {

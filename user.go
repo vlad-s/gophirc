@@ -3,8 +3,6 @@ package gophirc
 import (
 	"fmt"
 	"strings"
-
-	"github.com/vlad-s/gophirc/config"
 )
 
 type User struct {
@@ -15,15 +13,6 @@ type User struct {
 
 func (u User) String() string {
 	return fmt.Sprintf("%s!%s@%s", u.Nick, u.User, u.Host)
-}
-
-func (u User) IsAdmin() bool {
-	for _, v := range config.Get().Admins {
-		if v == u.Nick {
-			return true
-		}
-	}
-	return false
 }
 
 func ParseUser(u string) (*User, bool) {

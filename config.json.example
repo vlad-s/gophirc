@@ -1,0 +1,24 @@
+{
+  "servers": {
+    "first": {
+      "address": "irc.server.tld",
+      "port": 6667,
+      "nickname": "gophirc",
+      "username": "gophirc",
+      "realname": "gophirc",
+      "nickserv_password": "my_nick_pass"
+      "channels": [
+        "#my_chan"
+      ],
+      "admins": [
+        "my_nickname"
+      ]
+    },
+    "second": {
+      "address": "irc.other.server.tld",
+      "port": 6667,
+      "nickname": "my_bot"
+    }
+  },
+  "debug": false
+}

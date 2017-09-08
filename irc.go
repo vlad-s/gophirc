@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -38,6 +39,8 @@ type IRC struct {
 	State  State
 	Events map[string][]func(*Event)
 
+	Waiter *sync.WaitGroup
+
 	raw  chan string
 	quit chan struct{}
 }
@@ -48,6 +51,7 @@ func (irc *IRC) Connect() error {
 	if err != nil {
 		return errors.Wrap(err, "Error dialing the host")
 	}
+	irc.Waiter.Add(1)
 	irc.conn = c
 	return nil
 }
@@ -55,9 +59,10 @@ func (irc *IRC) Connect() error {
 func (irc *IRC) Disconnect(s string) {
 	fmt.Fprint(irc.conn, fmt.Sprintf("QUIT :%s\r\n", s))
 	irc.conn.Close()
+	irc.Waiter.Done()
 }
 
-func (irc *IRC) Loop() error {
+func (irc *IRC) Loop() {
 	var gracefulExit bool
 
 	go func() {
@@ -69,7 +74,7 @@ func (irc *IRC) Loop() error {
 				return
 			case s := <-irc.raw:
 				if config.Get().Debug {
-					logger.Log.Debugf("Raw:\t%q", s)
+					logger.Log.Debugf("%s:%d - %q", irc.Server.Address, irc.Server.Port, s)
 				}
 			}
 		}
@@ -81,9 +86,10 @@ func (irc *IRC) Loop() error {
 	}
 
 	if gracefulExit {
-		return nil
+		return
 	}
-	return errors.Wrap(s.Err(), "Error while looping")
+
+	logger.Log.Errorln(errors.Wrap(s.Err(), "Error while looping"))
 }
 
 func (irc *IRC) AddEventCallback(code string, cb func(*Event)) *IRC {
@@ -147,7 +153,7 @@ func (irc *IRC) getRaw(raw string) {
 	case "474":
 		logger.Log.WithField("channel", e.Arguments[0]).Warnln("Can't join channel")
 	case "KICK":
-		if e.Arguments[1] == config.Get().Nickname {
+		if e.Arguments[1] == irc.Server.Nickname {
 			logger.Log.WithFields(logger.Fields(map[string]interface{}{
 				"user": e.User.Nick, "channel": e.Arguments[0],
 			})).Warnln("We got kicked from a channel")
@@ -197,14 +203,22 @@ func (irc *IRC) Quit() {
 	irc.quit <- struct{}{}
 }
 
-func New() *IRC {
-	conf := config.Get()
+func (irc *IRC) IsAdmin(u *User) bool {
+	for _, v := range irc.Server.Admins {
+		if u.Nick == v {
+			return true
+		}
+	}
+	return false
+}
+
+func New(server config.Server, wg *sync.WaitGroup) *IRC {
 	logger.Log.WithFields(logger.Fields(map[string]interface{}{
-		"server": conf.Server.Address, "port": conf.Server.Port,
+		"server": server.Address, "port": server.Port,
 	})).Infoln("Connecting to server")
 
 	i := &IRC{
-		Server: conf.Server,
+		Server: server,
 
 		State: State{
 			Connected:  make(chan struct{}),
@@ -212,6 +226,8 @@ func New() *IRC {
 			Identified: make(chan struct{}),
 		},
 		Events: make(map[string][]func(*Event)),
+
+		Waiter: wg,
 
 		raw:  make(chan string),
 		quit: make(chan struct{}, 1),

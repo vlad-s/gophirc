@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/pkg/errors"
@@ -12,19 +13,18 @@ type Server struct {
 	Address string `json:"address"`
 	Port    uint16 `json:"port"`
 
-	NickservPassword string `json:"nickserv_password"`
-
-	Channels []string `json:"channels"`
-}
-
-type Config struct {
 	Nickname string `json:"nickname"`
 	Username string `json:"username"`
 	Realname string `json:"realname"`
 
-	Admins []string `json:"admins"`
+	NickservPassword string `json:"nickserv_password"`
 
-	Server Server `json:"server"`
+	Channels []string `json:"channels"`
+	Admins   []string `json:"admins"`
+}
+
+type Config struct {
+	Servers map[string]Server `json:"servers"`
 
 	Debug bool `json:"debug"`
 }
@@ -32,28 +32,30 @@ type Config struct {
 func (c *Config) Check() error {
 	logger.Log.Infoln("Checking the config for errors")
 
-	if c.Nickname == "" {
-		c.Nickname = "gophirc"
-	}
+	for name, server := range c.Servers {
+		if server.Address == "" {
+			return errors.New(fmt.Sprintf("%s: Server address not specified", name))
+		}
 
-	if len(c.Nickname) > 0 && len(c.Nickname) < 3 {
-		return errors.New("Nickname is empty or too short")
-	}
+		if server.Port == 0 {
+			return errors.New(fmt.Sprintf("%s: Server port not specified", name))
+		}
 
-	if c.Username == "" {
-		c.Username = "gophirc"
-	}
+		if server.Nickname == "" {
+			server.Nickname = "gophirc"
+		}
 
-	if c.Realname == "" {
-		c.Realname = "gophirc"
-	}
+		if len(server.Nickname) > 0 && len(server.Nickname) < 3 {
+			return errors.New(fmt.Sprintf("%s: Nickname is too short", name))
+		}
 
-	if c.Server.Address == "" {
-		return errors.New("Server address not specified")
-	}
+		if server.Username == "" {
+			server.Username = "gophirc"
+		}
 
-	if c.Server.Port == 0 {
-		return errors.New("Server port can't be zero")
+		if server.Realname == "" {
+			server.Realname = "gophirc"
+		}
 	}
 
 	return nil
