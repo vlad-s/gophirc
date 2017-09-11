@@ -12,6 +12,9 @@
       ],
       "admins": [
         "my_nickname"
+      ],
+      "ignore": [
+        "other_bot"
       ]
     },
     "second": {

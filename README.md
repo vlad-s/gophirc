@@ -71,7 +71,7 @@ Setting up a simple config:
   }
 }
 ```
-_Note: a full config example can be found in the `config.json.example` file._
+_Note: a full config example can be found in the `config/config.json.example` file._
 
 Setting a simple bot:
 ```go
@@ -117,10 +117,15 @@ irc.AddEventCallback("PRIVMSG", func(e *gophirc.Event) {
 For more examples on usage, please see [gophircbot](https://github.com/vlad-s/gophircbot).
 
 ## To do
-- [ ] Add defaults
+- [ ] Add tests
+  - [x] Config
+  - [x] User
+  - [ ] IRC
+  - [ ] Helpers & commands
+- [x] Add defaults
   - [x] Nickname, Username, Realname
 - [x] Parse CTCP messages into events
 - [x] Add more commands: `MODE`, `KICK`, etc.
-- [ ] Add regex matching for nicknames, channels
+- [ ] Add regex matching for ~~nicknames~~, channels
 - [x] Connect Multiple servers
-- [ ] Add ignored users
+- [x] Add ignored users

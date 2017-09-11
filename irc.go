@@ -34,7 +34,7 @@ type Event struct {
 
 type IRC struct {
 	conn   net.Conn
-	Server config.Server
+	Server *config.Server
 
 	State  State
 	Events map[string][]func(*Event)
@@ -146,6 +146,10 @@ func (irc *IRC) ReadEvent(raw string) {
 		}
 	}
 
+	if irc.IsIgnored(e.User) {
+		return
+	}
+
 	for _, callback := range irc.Events[e.Code] {
 		callback(e)
 	}
@@ -209,6 +213,9 @@ func (irc *IRC) Quit() {
 
 // IsAdmin returns whether or not the specified user is an admin.
 func (irc *IRC) IsAdmin(u *User) bool {
+	if u == nil {
+		return false
+	}
 	for _, v := range irc.Server.Admins {
 		if u.Nick == v {
 			return true
@@ -217,8 +224,21 @@ func (irc *IRC) IsAdmin(u *User) bool {
 	return false
 }
 
+// IsIgnored returns whether or not the specified user is ignored.
+func (irc *IRC) IsIgnored(u *User) bool {
+	if u == nil {
+		return false
+	}
+	for _, v := range irc.Server.Ignore {
+		if u.Nick == v {
+			return true
+		}
+	}
+	return false
+}
+
 // New returns a pointer to a new IRC struct using the server & wait group specified.
-func New(server config.Server, wg *sync.WaitGroup) *IRC {
+func New(server *config.Server, wg *sync.WaitGroup) *IRC {
 	logger.Log.WithFields(logger.Fields(map[string]interface{}{
 		"server": server.Address, "port": server.Port,
 	})).Infoln("Connecting to server")

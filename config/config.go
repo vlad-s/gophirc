@@ -21,10 +21,11 @@ type Server struct {
 
 	Channels []string `json:"channels"`
 	Admins   []string `json:"admins"`
+	Ignore   []string `json:"ignore"`
 }
 
 type Config struct {
-	Servers map[string]Server `json:"servers"`
+	Servers map[string]*Server `json:"servers"`
 
 	Debug bool `json:"debug"`
 }
@@ -85,7 +86,9 @@ func Parse(path string) (*Config, error) {
 // Get returns the parsed config, or a new Config{} if it's nil.
 func Get() *Config {
 	if conf == nil {
-		return new(Config)
+		conf = &Config{
+			Servers: make(map[string]*Server),
+		}
 	}
 	return conf
 }
