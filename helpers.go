@@ -10,6 +10,15 @@ func IsCTCP(s string) bool {
 	return false
 }
 
+// IsChannel returns whether a string is a channel or not.
+func IsChannel(s string) bool {
+	// todo: add regex for better matching
+	if s[0] == '#' {
+		return true
+	}
+	return false
+}
+
 func logStates(i *IRC) {
 	var c uint8
 	for {

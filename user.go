@@ -13,7 +13,10 @@ type User struct {
 }
 
 // Returns "nick!user@host"
-func (u User) String() string {
+func (u *User) String() string {
+	if u == nil {
+		return ""
+	}
 	return fmt.Sprintf("%s!%s@%s", u.Nick, u.User, u.Host)
 }
 

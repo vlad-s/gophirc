@@ -30,6 +30,7 @@ type Event struct {
 
 	User    *User
 	Message string
+	ReplyTo string
 }
 
 type IRC struct {
@@ -131,6 +132,12 @@ func (irc *IRC) ParseToEvent(raw string) (event *Event, ok bool) {
 			event.Arguments = message_args[1:]
 		}
 		event.Message = strings.TrimSpace(message)
+
+		if IsChannel(event.Arguments[0]) {
+			event.ReplyTo = event.Arguments[0]
+		} else if event.Arguments[0] == irc.Server.Nickname {
+			event.ReplyTo = event.User.Nick
+		}
 	}
 
 	return event, true
@@ -147,6 +154,10 @@ func (irc *IRC) ReadEvent(raw string) {
 	}
 
 	if irc.IsIgnored(e.User) {
+		return
+	}
+
+	if e.User != nil && e.User.Nick == irc.Server.Nickname {
 		return
 	}
 

@@ -120,8 +120,10 @@ For more examples on usage, please see [gophircbot](https://github.com/vlad-s/go
 - [ ] Add tests
   - [x] Config
   - [x] User
+  - [x] Logger
+  - [x] Helpers
   - [ ] IRC
-  - [ ] Helpers & commands
+  - [ ] commands
 - [x] Add defaults
   - [x] Nickname, Username, Realname
 - [x] Parse CTCP messages into events
