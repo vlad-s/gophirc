@@ -3,6 +3,8 @@ package gophirc
 import (
 	"fmt"
 	"strings"
+
+	"github.com/vlad-s/gophirc/logger"
 )
 
 // SendRaw sends a raw string back to the server, appending a CR LF.
@@ -34,6 +36,7 @@ func (irc *IRC) Register() {
 
 	irc.State.registered = true
 	irc.State.Registered <- struct{}{}
+	logger.Log.Infoln("Successfully registered on network")
 }
 
 // Identify sends the NickServ identify command to the server.

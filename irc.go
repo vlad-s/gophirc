@@ -186,6 +186,7 @@ func (irc *IRC) addBasicCallbacks() {
 
 			if e.Arguments[0] == "*" && !irc.State.registered {
 				irc.State.Connected <- struct{}{}
+				logger.Log.Infoln("Successfully connected to server")
 				irc.Register()
 			}
 
@@ -212,6 +213,7 @@ func (irc *IRC) addBasicCallbacks() {
 
 func (irc *IRC) autojoin(e *Event) {
 	irc.State.Identified <- struct{}{}
+	logger.Log.Infoln("Successfully identified to Nickserv")
 	for _, v := range irc.Server.Channels {
 		irc.Join(v)
 	}
@@ -271,7 +273,6 @@ func New(server *config.Server, wg *sync.WaitGroup) *IRC {
 	}
 
 	i.addBasicCallbacks()
-	go logStates(i)
 
 	return i
 }
