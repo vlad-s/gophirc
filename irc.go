@@ -14,12 +14,7 @@ import (
 )
 
 type State struct {
-	Connected chan struct{}
-
 	registered bool
-	Registered chan struct{}
-
-	Identified chan struct{}
 }
 
 type Event struct {
@@ -184,8 +179,7 @@ func (irc *IRC) addBasicCallbacks() {
 		go func(e *Event) {
 			message := strings.Join(e.Arguments[1:], " ")
 
-			if e.Arguments[0] == "*" && !irc.State.registered {
-				irc.State.Connected <- struct{}{}
+			if strings.Contains(e.Raw, "*** Looking up") && e.User == nil {
 				logger.Log.Infoln("Successfully connected to server")
 				irc.Register()
 			}
@@ -212,9 +206,9 @@ func (irc *IRC) addBasicCallbacks() {
 }
 
 func (irc *IRC) autojoin(e *Event) {
-	irc.State.Identified <- struct{}{}
 	logger.Log.Infoln("Successfully identified to Nickserv")
 	for _, v := range irc.Server.Channels {
+		logger.Log.Infof("Joining channel %q", v)
 		irc.Join(v)
 	}
 }
@@ -259,11 +253,6 @@ func New(server *config.Server, wg *sync.WaitGroup) *IRC {
 	i := &IRC{
 		Server: server,
 
-		State: State{
-			Connected:  make(chan struct{}),
-			Registered: make(chan struct{}),
-			Identified: make(chan struct{}),
-		},
 		Events: make(map[string][]func(*Event)),
 
 		Waiter: wg,

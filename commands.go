@@ -35,7 +35,6 @@ func (irc *IRC) Register() {
 	irc.SendRawf("NICK %s", irc.Server.Nickname)
 
 	irc.State.registered = true
-	irc.State.Registered <- struct{}{}
 	logger.Log.Infoln("Successfully registered on network")
 }
 
