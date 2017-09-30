@@ -128,10 +128,12 @@ func (irc *IRC) ParseToEvent(raw string) (event *Event, ok bool) {
 		}
 		event.Message = strings.TrimSpace(message)
 
-		if IsChannel(event.Arguments[0]) {
-			event.ReplyTo = event.Arguments[0]
-		} else if event.Arguments[0] == irc.Server.Nickname {
-			event.ReplyTo = event.User.Nick
+		if len(event.Arguments) > 0 {
+			if IsChannel(event.Arguments[0]) {
+				event.ReplyTo = event.Arguments[0]
+			} else if event.Arguments[0] == irc.Server.Nickname {
+				event.ReplyTo = event.User.Nick
+			}
 		}
 	}
 
