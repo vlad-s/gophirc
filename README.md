@@ -39,6 +39,7 @@ type Event struct {
 
     User    *User  // if we can parse a user from the source, add the parsed user here
     Message string // if it's a PRIVMSG, add the message here
+    ReplyTo string // if it's a PRIVMSG, add the recipient here (user or channel)
 }
 ```
 You can set callbacks for, technically, all events - numeric reply codes (e.g. "001", "900", etc.) or alpha codes (e.g. "NOTICE", "INVITE", etc.).

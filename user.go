@@ -28,8 +28,8 @@ func ParseUser(user string) (*User, bool) {
 
 	pattern := regexp.MustCompile(
 		`\A[a-zA-Z_\-\[\]\\^{}|][a-zA-Z0-9_\-\[\]\\^{}|.` + "`" +
-			`]*![a-zA-Z0-9_\-\[\]\\^{}|.` + "`" +
-			`]+@[a-zA-Z0-9_\-\[\]\\^{}|.` + "`" + `]+\z`)
+			`]*![a-zA-Z0-9_\-\[\]\\^{}|.~` + "`" +
+			`]+@[a-zA-Z0-9_\-\[\]\\^{}|.~` + "`" + `]+\z`)
 	if ok := pattern.MatchString(user); !ok {
 		return nil, false
 	}

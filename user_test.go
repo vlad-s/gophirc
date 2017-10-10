@@ -13,6 +13,7 @@ func TestParseUser(t *testing.T) {
 		{":}o{!I`mAButterfly@this.is.my.vhost", true},
 		{"x@y!z", false},
 		{"malformed", false},
+		{"psycho!~madness@0x00.0x70737963686f", true},
 	}
 	for _, test := range tests {
 		t.Run(test.user, func(t *testing.T) {
