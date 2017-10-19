@@ -1,4 +1,6 @@
-[![gophirc godoc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/vlad-s/gophirc)
+[![GoDoc](https://godoc.org/github.com/vlad-s/gophirc?status.svg)](https://godoc.org/github.com/vlad-s/gophirc)
+[![Go Report Card](https://goreportcard.com/badge/github.com/vlad-s/gophirc)](https://goreportcard.com/report/github.com/vlad-s/gophirc)
+[![Build Status](https://travis-ci.org/vlad-s/gophirc.svg?branch=master)](https://travis-ci.org/vlad-s/gophirc)
 ![gophirc version](https://img.shields.io/badge/version-0.1-orange.svg)
 [![Twitter URL](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/0x766c6164)
 
