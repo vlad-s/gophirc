@@ -9,6 +9,9 @@ import (
 	"github.com/vlad-s/gophirc/logger"
 )
 
+// Server contains the information used to a server, namely the address
+// and the port, along with the client's details, such as nickname, username, realname,
+// NickServ password, channels to join, hardcoded admins & ignored users.
 type Server struct {
 	Address string `json:"address"`
 	Port    uint16 `json:"port"`
@@ -24,6 +27,7 @@ type Server struct {
 	Ignore   []string `json:"ignore"`
 }
 
+// Config dictates the way the config file should be arranged.
 type Config struct {
 	Servers map[string]*Server `json:"servers"`
 
@@ -36,11 +40,11 @@ func (c *Config) Check() error {
 
 	for name, server := range c.Servers {
 		if server.Address == "" {
-			return errors.New(fmt.Sprintf("%s: Server address not specified", name))
+			return fmt.Errorf("%s: Server address not specified", name)
 		}
 
 		if server.Port == 0 {
-			return errors.New(fmt.Sprintf("%s: Server port not specified", name))
+			return fmt.Errorf("%s: Server port not specified", name)
 		}
 
 		if server.Nickname == "" {
@@ -48,7 +52,7 @@ func (c *Config) Check() error {
 		}
 
 		if len(server.Nickname) > 0 && len(server.Nickname) < 3 {
-			return errors.New(fmt.Sprintf("%s: Nickname is too short", name))
+			return fmt.Errorf("%s: Nickname is too short", name)
 		}
 
 		if server.Username == "" {

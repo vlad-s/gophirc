@@ -6,13 +6,14 @@ import (
 	"strings"
 )
 
+// User stores the nick, user, and host of a user parsed from an event.
 type User struct {
 	Nick string
 	User string
 	Host string
 }
 
-// Returns "nick!user@host"
+// String returns "nick!user@host".
 func (u *User) String() string {
 	if u == nil {
 		return ""
@@ -20,7 +21,8 @@ func (u *User) String() string {
 	return fmt.Sprintf("%s!%s@%s", u.Nick, u.User, u.Host)
 }
 
-// ParseUser splits a "nick!user@host" raw user into a User struct, containing Nick, User, Host fields.
+// ParseUser splits a "nick!user@host" raw user into a User struct,
+// containing the nickname, username, and hostname.
 func ParseUser(user string) (*User, bool) {
 	if user[0] == ':' {
 		user = user[1:]
@@ -29,7 +31,7 @@ func ParseUser(user string) (*User, bool) {
 	pattern := regexp.MustCompile(
 		`\A[a-zA-Z_\-\[\]\\^{}|][a-zA-Z0-9_\-\[\]\\^{}|.` + "`" +
 			`]*![a-zA-Z0-9_\-\[\]\\^{}|.~` + "`" +
-			`]+@[a-zA-Z0-9_\-\[\]\\^{}|.~` + "`" + `]+\z`)
+			`]+@[a-zA-Z0-9_\-\[\]\\^{}|.:~` + "`" + `]+\z`)
 	if ok := pattern.MatchString(user); !ok {
 		return nil, false
 	}

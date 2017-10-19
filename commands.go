@@ -16,12 +16,9 @@ func (irc *IRC) SendRaw(s string) {
 	fmt.Fprint(irc.conn, s+"\r\n")
 }
 
+// SendRawf is simply a wrapper for SendRaw & fmt.Sprintf.
 func (irc *IRC) SendRawf(format string, args ...interface{}) {
-	s := fmt.Sprintf(format, args...)
-	s = strings.Replace(s, "\r", "", -1)
-	s = strings.Replace(s, "\n", "", -1)
-	irc.raw <- s
-	fmt.Fprint(irc.conn, s+"\r\n")
+	irc.SendRaw(fmt.Sprintf(format, args...))
 }
 
 // pong sends a PONG command back to server. Used after receiving a PING.
@@ -34,7 +31,7 @@ func (irc *IRC) Register() {
 	irc.SendRawf("USER %s 8 * %s", irc.Server.Username, irc.Server.Realname)
 	irc.SendRawf("NICK %s", irc.Server.Nickname)
 
-	irc.State.registered = true
+	irc.State.Registered = true
 	logger.Log.Infoln("Successfully registered on network")
 }
 
@@ -62,8 +59,9 @@ func (irc *IRC) PrivMsg(replyTo, message string) {
 	irc.SendRawf("PRIVMSG %s :%s", replyTo, message)
 }
 
+// PrivMsgf is simply a wrapper for Privmsg & fmt.Sprintf.
 func (irc *IRC) PrivMsgf(replyTo, format string, args ...interface{}) {
-	irc.SendRawf("PRIVMSG %s :%s", replyTo, fmt.Sprintf(format, args...))
+	irc.PrivMsg(replyTo, fmt.Sprintf(format, args...))
 }
 
 // Notice sends a NOTICE command to the server.

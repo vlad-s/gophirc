@@ -13,21 +13,31 @@ import (
 	"github.com/vlad-s/gophirc/logger"
 )
 
+// State keeps track of the framework's states, as the name implies.
 type State struct {
-	registered bool
+	Registered   bool
+	Disconnected struct {
+		Value     bool
+		Requested bool
+	}
 }
 
+// Event contains the raw event received from the server along with the parsed data.
+// The framework parses CTCP messages as event, changing the Code to the CTCP action received.
+// In case we receive an event from a user (and not the server), we parse it and store it into
+// the `User` variable.
 type Event struct {
-	Raw       string
-	Code      string
-	Source    string
-	Arguments []string
+	Raw       string   // Raw line received from the server
+	Code      string   // Event code received or parsed from a CTCP message
+	Source    string   // Source of the event, user or server
+	Arguments []string // Arguments of the event
 
-	User    *User
-	Message string
-	ReplyTo string
+	User    *User  // If the source is a user, parse it & store it
+	Message string // If the event is a PRIVMSG, store the message here
+	ReplyTo string // Store the user or the channel to reply to
 }
 
+// IRC is the main structure containing the connection, server, state, event callbacks, etc.
 type IRC struct {
 	conn   net.Conn
 	Server *config.Server
@@ -51,13 +61,25 @@ func (irc *IRC) Connect() error {
 	}
 	irc.Waiter.Add(1)
 	irc.conn = c
+
+	irc.State.Disconnected = struct {
+		Value     bool
+		Requested bool
+	}{Value: false, Requested: false}
+
 	return nil
 }
 
 // Disconnect sends a QUIT command to the server, and closes the connection.
 func (irc *IRC) Disconnect(s string) {
 	fmt.Fprint(irc.conn, fmt.Sprintf("QUIT :%s\r\n", s))
-	irc.conn.Close()
+
+	irc.State.Disconnected = struct {
+		Value     bool
+		Requested bool
+	}{Value: true, Requested: true}
+
+	//irc.conn.Close()
 	irc.Waiter.Done()
 }
 
@@ -90,7 +112,17 @@ func (irc *IRC) Loop() {
 		return
 	}
 
+	irc.State.Disconnected = struct {
+		Value     bool
+		Requested bool
+	}{Value: true, Requested: false}
+
 	logger.Log.Errorln(errors.Wrap(s.Err(), "Error while looping"))
+
+	err := irc.Connect()
+	if err != nil {
+		logger.Log.Errorln(errors.Wrap(err, "Can't (re)connect to server"))
+	}
 }
 
 // AddEventCallback adds a callback function to the Events map on the specified reply code.
@@ -122,9 +154,9 @@ func (irc *IRC) ParseToEvent(raw string) (event *Event, ok bool) {
 		message := strings.Join(event.Arguments[1:], " ")[1:]
 		if IsCTCP(message) {
 			message = strings.Trim(message, "\001")
-			message_args := strings.Split(message, " ")
-			event.Code = message_args[0]
-			event.Arguments = message_args[1:]
+			messageArgs := strings.Split(message, " ")
+			event.Code = messageArgs[0]
+			event.Arguments = messageArgs[1:]
 		}
 		event.Message = strings.TrimSpace(message)
 
@@ -147,6 +179,7 @@ func (irc *IRC) ReadEvent(raw string) {
 		split := strings.Split(e.Raw, " ")
 		if split[0] == "PING" {
 			irc.pong(split[1])
+			return
 		}
 	}
 
@@ -155,7 +188,8 @@ func (irc *IRC) ReadEvent(raw string) {
 	}
 
 	if e.User != nil && e.User.Nick == irc.Server.Nickname {
-		return
+		// our own event
+		//return
 	}
 
 	for _, callback := range irc.Events[e.Code] {
@@ -182,7 +216,6 @@ func (irc *IRC) addBasicCallbacks() {
 			message := strings.Join(e.Arguments[1:], " ")
 
 			if strings.Contains(e.Raw, "*** Looking up") && e.User == nil {
-				logger.Log.Infoln("Successfully connected to server")
 				irc.Register()
 			}
 
@@ -195,6 +228,7 @@ func (irc *IRC) addBasicCallbacks() {
 			}
 		}(e)
 	}).AddEventCallback("001", func(e *Event) {
+		logger.Log.Infoln("Successfully connected to server")
 		irc.Identify()
 	}).AddEventCallback("900", func(e *Event) {
 		go irc.autojoin(e)
@@ -250,7 +284,7 @@ func (irc *IRC) IsIgnored(u *User) bool {
 func New(server *config.Server, wg *sync.WaitGroup) *IRC {
 	logger.Log.WithFields(logger.Fields(map[string]interface{}{
 		"server": server.Address, "port": server.Port,
-	})).Infoln("Connecting to server")
+	})).Infoln("Generating new server connection")
 
 	i := &IRC{
 		Server: server,

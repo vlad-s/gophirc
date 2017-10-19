@@ -21,6 +21,13 @@
       "address": "irc.other.server.tld",
       "port": 6667,
       "nickname": "my_bot"
+    },
+    "freenode": {
+      "address": "irc.freenode.net",
+      "port": 6667,
+      "nickname": "gophirc_test",
+      "username": "gophirc",
+      "realname": "gophirc"
     }
   },
   "debug": false

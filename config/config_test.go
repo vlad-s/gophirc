@@ -11,8 +11,8 @@ func TestGet(t *testing.T) {
 		t.Error("Error getting a new config")
 	}
 
-	Parse("config.json.example")
-	if len(Get().Servers) != 2 {
+	_, err := Parse("config.json.example")
+	if err != nil {
 		t.Error("Error getting the parsed config")
 	}
 }
@@ -32,10 +32,6 @@ func TestParse(t *testing.T) {
 				t.Errorf("Config %q - should fail: %v, got err %q\n", test.name, test.shouldFail, err)
 			}
 			if !test.shouldFail {
-				if len(conf.Servers) != 2 {
-					t.Errorf("Config %q - couldn't get servers", test.name)
-				}
-
 				nick := conf.Servers["first"].Nickname
 				if nick != "gophirc" {
 					t.Errorf("Config %q - wrong nickname; expected \"gophirc\", got %q\n", test.name, nick)

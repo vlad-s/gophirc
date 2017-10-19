@@ -14,6 +14,7 @@ func TestParseUser(t *testing.T) {
 		{"x@y!z", false},
 		{"malformed", false},
 		{"psycho!~madness@0x00.0x70737963686f", true},
+		{"gophirc_test!~gophirc@2a02:2f0d:1a1:c19:581e:ca94:3650:2615", true},
 	}
 	for _, test := range tests {
 		t.Run(test.user, func(t *testing.T) {
@@ -27,12 +28,13 @@ func TestParseUser(t *testing.T) {
 
 func TestUser_String(t *testing.T) {
 	tests := []struct {
-		user     User
+		user     *User
 		expected string
 	}{
-		{User{"a", "b", "c"}, "a!b@c"},
-		{User{"foo", "bar", "baz"}, "foo!bar@baz"},
-		{User{"}o{", "I`mAButterfly", "this.is.my.vhost"}, "}o{!I`mAButterfly@this.is.my.vhost"},
+		{&User{"a", "b", "c"}, "a!b@c"},
+		{&User{"foo", "bar", "baz"}, "foo!bar@baz"},
+		{&User{"}o{", "I`mAButterfly", "this.is.my.vhost"}, "}o{!I`mAButterfly@this.is.my.vhost"},
+		{nil, ""},
 	}
 	for _, test := range tests {
 		t.Run(test.expected, func(t *testing.T) {
