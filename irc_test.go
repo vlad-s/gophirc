@@ -1,6 +1,7 @@
 package gophirc
 
 import (
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -11,7 +12,7 @@ import (
 var wg sync.WaitGroup
 var irc *IRC
 
-const channel = "#gophirc_test"
+var channel = "#gophirc_test" + strconv.Itoa(time.Now().Second())
 
 func TestNew(t *testing.T) {
 	// no error checking, config tests imply this is working

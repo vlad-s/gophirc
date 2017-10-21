@@ -117,7 +117,11 @@ func (irc *IRC) Loop() {
 		Requested bool
 	}{Value: true, Requested: false}
 
-	logger.Log.Errorln(errors.Wrap(s.Err(), "Error while looping"))
+	if s.Err() != nil {
+		logger.Log.Errorln(errors.Wrap(s.Err(), "Error while looping"))
+	} else {
+		logger.Log.Errorf("Looping stopped, no bufio error - state: %#v", irc.State)
+	}
 
 	err := irc.Connect()
 	if err != nil {

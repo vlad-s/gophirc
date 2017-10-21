@@ -30,5 +30,5 @@
       "realname": "gophirc"
     }
   },
-  "debug": false
+  "debug": true
 }
